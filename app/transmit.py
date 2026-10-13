@@ -418,8 +418,9 @@ class TransmitManager:
                         pass
             self._transports = _build_transports(self._db)
             targets = [t for t in self._transports.values() if t.enabled and t.target]
-        for t in targets:
-            await self._ensure(t)
+        async with self._lock:
+            for t in targets:
+                await self._ensure(t)
 
     async def _connection_watchdog(self) -> None:
         """Recheck idle radio links even when no alerts are queued."""
@@ -442,7 +443,7 @@ class TransmitManager:
     # ---- status / compat ------------------------------------------------
     @property
     def connected(self) -> bool:
-        return any(t.connected for t in self._transports.values() if t.enabled)
+        return any(t.connected and t.tx is not None and t.tx.connected for t in self._transports.values() if t.enabled)
 
     @property
     def port(self) -> str | None:
@@ -474,7 +475,7 @@ class TransmitManager:
 
     # ---- connection -----------------------------------------------------
     async def _ensure(self, t: Transport) -> bool:
-        if t.connected and t.tx is not None:
+        if t.connected and t.tx is not None and t.tx.connected:
             return True
         if not t.enabled:
             return False
@@ -498,6 +499,9 @@ class TransmitManager:
         try:
             tx = t.make()
             await tx.connect()
+            if not tx.connected:
+                await tx.close()
+                raise RuntimeError("radio transport did not report connected")
             t.tx, t.connected, t.error = tx, True, ""
             return ""
         except Exception as exc:
