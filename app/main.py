@@ -19,6 +19,7 @@ from .watchdog import Liveness
 from .web.routes import router
 from .web.bluetooth_routes import router as bluetooth_router
 from .web.radio_tools import router as radio_tools_router
+from .web.operator import router as operator_router
 
 logger = logging.getLogger("mesh_wx.main")
 
@@ -125,6 +126,7 @@ def create_app() -> FastAPI:
     app.include_router(router)
     app.include_router(bluetooth_router)
     app.include_router(radio_tools_router)
+    app.include_router(operator_router)
     return app
 
 

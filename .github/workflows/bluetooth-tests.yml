@@ -7,6 +7,7 @@ on:
       - feature/bluetooth-radio-connections
       - feature/phase2-radio-reliability
       - feature/phase3-stability-release
+      - feature/phase4-ux
   pull_request:
     paths:
       - 'app/bluetooth_discovery.py'
@@ -17,6 +18,9 @@ on:
       - 'tests/test_bluetooth_connections.py'
       - 'tests/test_radio_tools.py'
       - 'tests/test_phase3.py'
+      - 'tests/test_operator.py'
+      - 'app/web/operator.py'
+      - 'app/web/templates/operator.html'
       - 'app/web/radio_tools.py'
       - 'app/network_discovery.py'
       - 'app/scheduled_backup.py'
