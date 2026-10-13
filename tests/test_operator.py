@@ -29,3 +29,16 @@ async def test_preferences_round_trip():
     await save_preferences(request, Preferences(compact=True, advanced=True, monitor=False))
     result = await preferences(request)
     assert result == {"compact": True, "advanced": True, "monitor": False}
+
+
+def test_operator_notifications():
+    from app.web.operator import build_notifications
+    alerts = build_notifications([{"enabled": True, "connected": False}], "error timeout", 6)
+    assert any(a["level"] == "critical" for a in alerts)
+    assert any("polling" in a["message"].lower() for a in alerts)
+    assert any("queue" in a["message"].lower() for a in alerts)
+
+
+def test_operator_notifications_healthy():
+    from app.web.operator import build_notifications
+    assert build_notifications([{"enabled": True, "connected": True}], "ok", 0) == []
