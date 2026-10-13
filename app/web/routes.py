@@ -541,7 +541,7 @@ async def save_settings(
     db.set_setting("meshtastic_host", meshtastic_host.strip())
     db.set_setting("serial_port", serial_port.strip())
     db.set_setting("meshcore_enabled", bool(meshcore_enabled))
-    db.set_setting("meshcore_conn", (meshcore_conn or "serial").strip())
+    db.set_setting("meshcore_conn", meshcore_conn if meshcore_conn in ("serial", "tcp", "ble") else "serial")
     db.set_setting("meshcore_port", meshcore_port.strip())
     db.set_setting("meshcore_host", meshcore_host.strip())
     db.set_setting("meshcore_channel", int(meshcore_channel))
