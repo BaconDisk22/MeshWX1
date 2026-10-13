@@ -71,10 +71,11 @@
           <select name="meshtastic_conn" onchange="mwxConn('mt', this.value)">
             <option value="serial" {% if mt_conn=='serial' %}selected{% endif %}>USB (serial)</option>
             <option value="tcp" {% if mt_conn=='tcp' %}selected{% endif %}>Network (IP / TCP)</option>
+            <option value="ble" {% if mt_conn=='ble' %}selected{% endif %}>Bluetooth LE (experimental)</option>
           </select></div>
       </div>
 
-      <div id="mt-usb" style="display:{{ 'none' if mt_conn=='tcp' else 'block' }}">
+      <div id="mt-usb" style="display:{{ 'none' if mt_conn in ('tcp','ble') else 'block' }}">
         <label>USB serial port (COM3 on Windows &middot; /dev/ttyUSB0 &middot; /dev/ttyACM0)</label>
         <input id="serial_port" name="serial_port" value="{{ mt_port }}"
                placeholder="click Scan, then Use - or type it">
@@ -83,8 +84,8 @@
                 hx-swap="outerHTML" style="margin-top:8px;">Scan for USB ports</button>
         <div style="margin-top:8px;">{% set target = 'serial_port' %}{% include "_ports.html" %}</div>
       </div>
-      <div id="mt-ip" style="display:{{ 'block' if mt_conn=='tcp' else 'none' }}">
-        <label>Network address (host or host:port)</label>
+      <div id="mt-ip" style="display:{{ 'block' if mt_conn in ('tcp','ble') else 'none' }}">
+        <label>Network host or Bluetooth address / macOS UUID</label>
         <input name="meshtastic_host" value="{{ mt_host }}" placeholder="192.168.1.50">
       </div>
 
@@ -124,8 +125,8 @@
   <script>
     function mwxConn(p, v){
       var usb = document.getElementById(p+'-usb'), ip = document.getElementById(p+'-ip');
-      if (usb) usb.style.display = (v==='tcp') ? 'none' : 'block';
-      if (ip)  ip.style.display  = (v==='tcp') ? 'block' : 'none';
+      if (usb) usb.style.display = (v==='tcp'||v==='ble') ? 'none' : 'block';
+      if (ip)  ip.style.display  = (v==='tcp'||v==='ble') ? 'block' : 'none';
     }
   </script>
 
