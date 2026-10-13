@@ -18,6 +18,9 @@ on:
       - 'tests/test_phase3.py'
       - 'app/web/radio_tools.py'
       - 'app/network_discovery.py'
+      - 'app/scheduled_backup.py'
+      - 'app/backup.py'
+      - 'app/smokecheck.py'
       - 'app/web/templates/base.html'
       - 'requirements*.txt'
       - '.github/workflows/bluetooth-tests.yml'
@@ -41,5 +44,7 @@ jobs:
         run: python -m pip install -r requirements-dev.txt
       - name: Compile modified modules
         run: python -m compileall -q app
+      - name: Run no-transmit smoke checks
+        run: python -m app.smokecheck
       - name: Run radio regression tests
         run: python -m pytest -q tests
