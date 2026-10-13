@@ -64,7 +64,8 @@ async def radio_status(request: Request):
     """Read-only transport diagnostics for a dashboard or support checks."""
     tx = request.app.state.tx
     return {"radios": tx.status(), "queue_depth": tx.queue_depth,
-            "any_connected": tx.connected}
+            "any_connected": tx.connected,
+            "connection_history": tx.connection_history()}
 
 
 @router.get("/api/radios/discover-network")
