@@ -380,6 +380,8 @@ class TransmitManager:
         self._health_task: asyncio.Task | None = None
         self._reconnect_delay = 2.0
         self._stopped = False
+        self._connection_history: deque[dict] = deque(maxlen=100)
+        self._retry_after: dict[str, float] = {}
 
     # ---- lifecycle ------------------------------------------------------
     def start(self) -> None:
@@ -418,7 +420,6 @@ class TransmitManager:
                         pass
             self._transports = _build_transports(self._db)
             targets = [t for t in self._transports.values() if t.enabled and t.target]
-        async with self._lock:
             for t in targets:
                 await self._ensure(t)
 
@@ -433,12 +434,18 @@ class TransmitManager:
                     if t.tx is not None and not t.tx.connected:
                         t.connected = False
                     if not t.connected:
+                        if asyncio.get_running_loop().time() < self._retry_after.get(t.name, 0):
+                            continue
                         try:
                             await self._reconnect(t)
+                            self._retry_after[t.name] = asyncio.get_running_loop().time() + (20 if t.connected else 60)
                         except asyncio.CancelledError:
                             raise
                         except Exception:
                             logger.exception("background reconnect failed for %s", t.name)
+
+    def connection_history(self) -> list[dict]:
+        return list(self._connection_history)
 
     # ---- status / compat ------------------------------------------------
     @property
@@ -503,6 +510,7 @@ class TransmitManager:
                 await tx.close()
                 raise RuntimeError("radio transport did not report connected")
             t.tx, t.connected, t.error = tx, True, ""
+            self._connection_history.append({"radio": t.name, "event": "connected", "target": t.target})
             return ""
         except Exception as exc:
             t.tx, t.connected = None, False
@@ -581,6 +589,7 @@ class TransmitManager:
             else:
                 logger.warning("%s reopen failed (try %d/4): %s", t.name, i + 1, err)
         t.error = last
+        self._connection_history.append({"radio": t.name, "event": "reconnect_failed", "error": last})
         self._db.add_error(t.name, "link reset failed: %s" % last)
         return False
 
