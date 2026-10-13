@@ -3,6 +3,7 @@ name: Bluetooth regression tests
 on:
   push:
     branches:
+      - main
       - feature/bluetooth-radio-connections
       - feature/phase2-radio-reliability
       - feature/phase3-stability-release
@@ -22,6 +23,11 @@ on:
       - 'app/backup.py'
       - 'app/smokecheck.py'
       - 'app/web/templates/base.html'
+      - 'app/main.py'
+      - 'app/ipaws.py'
+      - 'app/poller.py'
+      - 'deploy/**'
+      - 'docs/PHASE3_SETUP.md'
       - 'requirements*.txt'
       - '.github/workflows/bluetooth-tests.yml'
   workflow_dispatch:
