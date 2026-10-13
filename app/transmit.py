@@ -75,6 +75,9 @@ class MeshtasticTransmitter(Transmitter):
                     iface = TCPInterface(hostname=h, portNumber=int(p))
                 else:
                     iface = TCPInterface(hostname=h)
+            elif self.conn == "ble":
+                from meshtastic.ble_interface import BLEInterface
+                iface = BLEInterface(address=self.host)
             else:
                 from meshtastic.serial_interface import SerialInterface
                 iface = SerialInterface(devPath=self.port)
@@ -344,7 +347,7 @@ def _build_transports(db) -> dict:
         name="meshtastic", label="Meshtastic",
         enabled=bool(g("meshtastic_enabled", True)),
         conn=mt_conn, channel=num("channel_index", 0),
-        target=(g("meshtastic_host", "") if mt_conn == "tcp" else g("serial_port", "")) or "",
+        target=(g("meshtastic_host", "") if mt_conn in ("tcp", "ble") else g("serial_port", "")) or "",
         make=lambda: MeshtasticTransmitter(mt_conn, g("serial_port", "") or "", g("meshtastic_host", "") or ""),
         repeat=rep("meshtastic_repeat"), test_channel=num("meshtastic_test_channel", 1),
     )
