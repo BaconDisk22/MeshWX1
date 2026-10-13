@@ -16,6 +16,7 @@ from .transmit import TransmitManager
 from .watchdog import Liveness
 from .web.routes import router
 from .web.bluetooth_routes import router as bluetooth_router
+from .web.radio_tools import router as radio_tools_router
 
 logger = logging.getLogger("mesh_wx.main")
 
@@ -97,6 +98,7 @@ def create_app() -> FastAPI:
     app = FastAPI(title="mesh-wx", lifespan=lifespan)
     app.include_router(router)
     app.include_router(bluetooth_router)
+    app.include_router(radio_tools_router)
     return app
 
 
