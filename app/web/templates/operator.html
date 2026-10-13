@@ -1,5 +1,5 @@
 <!doctype html><html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
-<meta name="theme-color" content="#101a22"><title>MeshWX Operator Center</title>
+<meta name="theme-color" content="#101a22"><link rel="manifest" href="/operator/manifest.webmanifest"><title>MeshWX Operator Center</title>
 <style>
 :root{color-scheme:dark;--bg:#101a22;--panel:#1b2a35;--line:#334753;--ink:#e6eff2;--muted:#a2b6c0;--accent:#67c6be}
 *{box-sizing:border-box}body{margin:0;background:var(--bg);color:var(--ink);font:15px/1.5 system-ui,sans-serif}
@@ -25,6 +25,7 @@ body.compact .panel,body.compact .card{padding:10px}body.monitor header nav,body
 <div class="card"><small>Radio connections</small><div id="radios" class="value">—</div></div>
 <div class="card"><small>Weather polling</small><div id="poll" class="value">—</div></div>
 <div class="card"><small>Queue / uptime</small><div id="queue" class="value">—</div></div></div>
+<section class="panel"><h2>Notifications &amp; Health</h2><div id="notifications" role="status" aria-live="polite">Checking system health…</div></section>
 <section class="panel"><h2>Radio Management</h2><div id="radio-list"></div><p><a href="/settings/radio-tools">Configure radios, profiles and failover →</a></p></section>
 <section class="panel"><h2>Broadcast Activity Timeline</h2><div class="scroll"><table><thead><tr><th>Time</th><th>Transport</th><th>Delivery</th><th>Message</th></tr></thead><tbody id="activity"></tbody></table></div></section>
 <section class="panel"><h2>Weather Alerts</h2><div class="scroll"><table><thead><tr><th>Time</th><th>Event</th><th>Area</th><th>Decision</th></tr></thead><tbody id="weather"></tbody></table></div></section>
@@ -41,6 +42,7 @@ async function refresh(){try{const response=await fetch('/api/ux/overview',{cach
 text('health',d.health.toUpperCase());el('health').className='value '+(d.health==='healthy'?'ok':d.health==='critical'?'bad':'warn');
 text('radios',d.radios.filter(r=>r.connected).length+' / '+d.radios.filter(r=>r.enabled).length+' online');
 text('poll',d.last_poll_result||'Waiting for NWS');text('queue',d.queue_depth+' queued • '+Math.floor(d.uptime_seconds/60)+' min');
+const notices=el('notifications');notices.replaceChildren();for(const n of d.notifications){const p=document.createElement('p');p.className=n.level==='critical'?'bad':'warn';p.textContent=n.level.toUpperCase()+': '+n.message;notices.append(p)}if(!d.notifications.length){const p=document.createElement('p');p.className='ok';p.textContent='No current radio, queue, or polling warnings';notices.append(p)}
 const box=el('radio-list');box.replaceChildren();for(const r of d.radios){const p=document.createElement('p');p.textContent=r.label+': '+(r.connected?'Connected':r.enabled?'Disconnected':'Disabled')+' • '+r.conn+' • '+(r.target||'not configured');box.append(p)}
 rows('activity',d.broadcast_history,['ts','transport','success','text']);rows('weather',d.weather_history,['ts','event','area','disposition']);
 text('diagnostics',JSON.stringify({radios:d.radios,connections:d.connection_history,last_error:d.last_error,last_poll:d.last_poll,dry_run:d.dry_run},null,2));
