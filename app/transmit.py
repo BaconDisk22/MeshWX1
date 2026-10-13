@@ -657,7 +657,9 @@ class TransmitManager:
             enabled = [t for t in self._transports.values() if t.enabled]
             # Opt-in failover sends to the first successful radio only. This
             # avoids duplicate broadcasts while preserving legacy fan-out by default.
-            failover = bool(self._db.get_setting("radio_failover_enabled", False))
+            failover_setting = self._db.get_setting("radio_failover_enabled", False)
+            failover = (failover_setting.lower() in ("true", "1", "yes", "on")
+                        if isinstance(failover_setting, str) else bool(failover_setting))
             for t in enabled:
                 ch = t.test_channel if use_test else t.channel
                 ok, err = await self._try_send(t, text, ch)
