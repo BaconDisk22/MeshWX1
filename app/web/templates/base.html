@@ -14,6 +14,11 @@
       --shadow:0 1px 2px rgba(16,24,48,.05), 0 12px 30px rgba(16,24,48,.06);
     }
     *{box-sizing:border-box;}
+    /* Phase 3 dark-mode contrast for native controls and mobile browsers. */
+    html{color-scheme:dark;}
+    input,select,textarea{color:var(--ink);background:var(--inset);border-color:var(--line);}
+    input:focus-visible,select:focus-visible,textarea:focus-visible,button:focus-visible,a:focus-visible{outline:2px solid var(--accent);outline-offset:2px;}
+    @media(prefers-reduced-motion:reduce){*,*::before,*::after{scroll-behavior:auto!important;transition:none!important;animation:none!important;}}
     body{margin:0;background:var(--bg);color:var(--ink);
       font:15px/1.55 -apple-system,"Segoe UI",Roboto,system-ui,sans-serif;
       -webkit-font-smoothing:antialiased;font-variant-numeric:tabular-nums;}
