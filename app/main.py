@@ -3,6 +3,8 @@ from __future__ import annotations
 
 import asyncio
 import logging
+import os
+from pathlib import Path
 from contextlib import asynccontextmanager
 
 from fastapi import FastAPI
@@ -84,6 +86,12 @@ async def lifespan(app: FastAPI):
     beat_task = asyncio.create_task(_heartbeat(liveness))
     app.state.liveness = liveness
 
+    backup_task = None
+    backup_dir = os.environ.get("MESHWX_BACKUP_DIR", "").strip()
+    if backup_dir:
+        from .scheduled_backup import daily_backup_loop
+        backup_task = asyncio.create_task(daily_backup_loop(Path(cfg.db_path), Path(backup_dir)), name="daily-backup")
+
     tx.start()
     # Connect the radios in the background so serial probing never blocks the
     # web server from coming up (a non-node USB port can take 30s+ to time out).
@@ -96,6 +104,12 @@ async def lifespan(app: FastAPI):
         yield
     finally:
         logger.info("shutting down mesh-wx")
+        if backup_task is not None:
+            backup_task.cancel()
+            try:
+                await backup_task
+            except asyncio.CancelledError:
+                pass
         liveness.stop()          # first: never force-exit during a clean shutdown
         beat_task.cancel()
         if not startup_task.done():
