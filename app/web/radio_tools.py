@@ -112,7 +112,9 @@ class FailoverSetting(BaseModel):
 
 @router.get("/api/radios/failover")
 async def get_failover(request: Request):
-    return {"enabled": bool(request.app.state.db.get_setting("radio_failover_enabled", False))}
+    value = request.app.state.db.get_setting("radio_failover_enabled", False)
+    enabled = value.lower() in ("true", "1", "yes", "on") if isinstance(value, str) else bool(value)
+    return {"enabled": enabled}
 
 
 @router.post("/api/radios/failover")
