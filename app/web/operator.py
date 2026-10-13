@@ -2,7 +2,7 @@
 from __future__ import annotations
 
 from fastapi import APIRouter, Request
-from fastapi.responses import HTMLResponse
+from fastapi.responses import HTMLResponse, JSONResponse
 from pydantic import BaseModel, Field
 
 router = APIRouter()
@@ -113,3 +113,8 @@ async def operator():
     from pathlib import Path
     page = Path(__file__).parent / "templates" / "operator.html"
     return HTMLResponse(page.read_text(encoding="utf-8"))
+
+
+@router.get("/operator/manifest.webmanifest")
+async def manifest():
+    return JSONResponse({"name":"MeshWX Operator Center","short_name":"MeshWX","start_url":"/operator","display":"standalone","background_color":"#101a22","theme_color":"#101a22"},media_type="application/manifest+json")
