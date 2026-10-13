@@ -69,3 +69,35 @@ async def test_bluetooth_discovery_sorts_and_handles_missing_names(monkeypatch):
 async def test_bluetooth_scan_rejects_invalid_timeout(timeout):
     with pytest.raises(ValueError):
         await discover_bluetooth_devices(timeout)
+
+
+@pytest.mark.asyncio
+async def test_meshcore_ble_uses_ble_factory(monkeypatch):
+    """Ensure the BLE path does not accidentally open a USB serial port."""
+    meshcore_module = types.ModuleType("meshcore")
+    device = types.SimpleNamespace(disconnect=AsyncMock(), is_connected=True)
+    factory = AsyncMock(return_value=device)
+    meshcore_module.MeshCore = types.SimpleNamespace(create_ble=factory)
+    monkeypatch.setitem(sys.modules, "meshcore", meshcore_module)
+    tx = MeshCoreTransmitter("ble", host="RADIO-UUID")
+    await tx.connect()
+    factory.assert_awaited_once_with(
+        "RADIO-UUID", default_timeout=6.0, auto_reconnect=True
+    )
+    assert tx.connected
+    device.is_connected = False
+    assert not tx.connected
+    await tx.close()
+    device.disconnect.assert_awaited_once()
+
+
+@pytest.mark.asyncio
+async def test_meshcore_ble_rejects_no_response(monkeypatch):
+    meshcore_module = types.ModuleType("meshcore")
+    meshcore_module.MeshCore = types.SimpleNamespace(
+        create_ble=AsyncMock(return_value=None)
+    )
+    monkeypatch.setitem(sys.modules, "meshcore", meshcore_module)
+    tx = MeshCoreTransmitter("ble", host="RADIO-UUID")
+    with pytest.raises(RuntimeError, match="no response"):
+        await tx.connect()
