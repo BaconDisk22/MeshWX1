@@ -5,6 +5,7 @@ on:
     branches:
       - feature/bluetooth-radio-connections
       - feature/phase2-radio-reliability
+      - feature/phase3-stability-release
   pull_request:
     paths:
       - 'app/bluetooth_discovery.py'
@@ -14,6 +15,7 @@ on:
       - 'app/web/templates/settings.html'
       - 'tests/test_bluetooth_connections.py'
       - 'tests/test_radio_tools.py'
+      - 'tests/test_phase3.py'
       - 'app/web/radio_tools.py'
       - 'app/network_discovery.py'
       - 'app/web/templates/base.html'
@@ -40,4 +42,4 @@ jobs:
       - name: Compile modified modules
         run: python -m compileall -q app
       - name: Run radio regression tests
-        run: python -m pytest -q tests/test_bluetooth_connections.py tests/test_radio_tools.py
+        run: python -m pytest -q tests
