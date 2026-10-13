@@ -1,0 +1,19 @@
+#!/bin/sh
+# Raspberry Pi systemd service example; adjust User, WorkingDirectory and ExecStart.
+[Unit]
+Description=MeshWX weather alerts to mesh radio
+After=network-online.target bluetooth.target
+Wants=network-online.target
+
+[Service]
+Type=simple
+User=pi
+WorkingDirectory=/home/pi/MeshWX1
+ExecStart=/home/pi/MeshWX1/.venv/bin/python -m app.main
+Restart=on-failure
+RestartSec=10
+TimeoutStopSec=30
+NoNewPrivileges=true
+
+[Install]
+WantedBy=multi-user.target
