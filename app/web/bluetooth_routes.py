@@ -57,3 +57,11 @@ async def bluetooth_scan():
         {"name": d.name, "address": d.address, "rssi": d.rssi}
         for d in devices
     ]}
+
+
+@router.get("/api/radios/status")
+async def radio_status(request: __import__("fastapi").Request):
+    """Read-only transport diagnostics for a dashboard or support checks."""
+    tx = request.app.state.tx
+    return {"radios": tx.status(), "queue_depth": tx.queue_depth,
+            "any_connected": tx.connected}
