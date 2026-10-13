@@ -377,6 +377,7 @@ class TransmitManager:
         self._queue_event = asyncio.Event()
         self._lock = asyncio.Lock()
         self._worker_task: asyncio.Task | None = None
+        self._health_task: asyncio.Task | None = None
         self._reconnect_delay = 2.0
         self._stopped = False
 
@@ -384,10 +385,17 @@ class TransmitManager:
     def start(self) -> None:
         self._stopped = False
         self._worker_task = asyncio.create_task(self._worker(), name="tx-worker")
+        self._health_task = asyncio.create_task(self._connection_watchdog(), name="radio-watchdog")
 
     async def stop(self) -> None:
         self._stopped = True
         self._queue_event.set()
+        if self._health_task:
+            self._health_task.cancel()
+            try:
+                await self._health_task
+            except asyncio.CancelledError:
+                pass
         if self._worker_task:
             self._worker_task.cancel()
             try:
@@ -413,6 +421,24 @@ class TransmitManager:
         for t in targets:
             await self._ensure(t)
 
+    async def _connection_watchdog(self) -> None:
+        """Recheck idle radio links even when no alerts are queued."""
+        while not self._stopped:
+            await asyncio.sleep(20)
+            async with self._lock:
+                for t in self._transports.values():
+                    if not t.enabled or not t.target:
+                        continue
+                    if t.tx is not None and not t.tx.connected:
+                        t.connected = False
+                    if not t.connected:
+                        try:
+                            await self._reconnect(t)
+                        except asyncio.CancelledError:
+                            raise
+                        except Exception:
+                            logger.exception("background reconnect failed for %s", t.name)
+
     # ---- status / compat ------------------------------------------------
     @property
     def connected(self) -> bool:
@@ -436,7 +462,7 @@ class TransmitManager:
     def status(self) -> list[dict]:
         return [
             {"name": t.name, "label": t.label, "enabled": t.enabled,
-             "conn": t.conn, "connected": t.connected, "target": t.target,
+             "conn": t.conn, "connected": bool(t.connected and t.tx is not None and t.tx.connected), "target": t.target,
              "channel": t.channel, "error": t.error}
             for t in self._transports.values()
         ]
