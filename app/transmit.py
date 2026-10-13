@@ -210,11 +210,14 @@ class MeshCoreTransmitter(Transmitter):
             h, _, p = self.host.partition(":")
             self._mc = await MeshCore.create_tcp(
                 h, int(p or 4000), default_timeout=6.0, auto_reconnect=True)
+        elif self.conn == "ble":
+            self._mc = await MeshCore.create_ble(
+                self.host, default_timeout=6.0, auto_reconnect=True)
         else:
             self._mc = await MeshCore.create_serial(
                 self.port, self.baud, default_timeout=6.0, auto_reconnect=True)
         if self._mc is None:
-            where = self.host if self.conn == "tcp" else self.port
+            where = self.host if self.conn in ("tcp", "ble") else self.port
             raise RuntimeError("no response from MeshCore node on %s" % (where or "(unset)"))
 
     async def send_text(self, text: str, channel: int) -> None:
@@ -263,7 +266,7 @@ class MeshCoreTransmitter(Transmitter):
 
     @property
     def connected(self) -> bool:
-        return self._mc is not None
+        return self._mc is not None and bool(getattr(self._mc, "is_connected", True))
 
     async def read_channels(self) -> list:
         if self._mc is None:
@@ -356,7 +359,7 @@ def _build_transports(db) -> dict:
         name="meshcore", label="MeshCore",
         enabled=bool(g("meshcore_enabled", False)),
         conn=mc_conn, channel=num("meshcore_channel", 0),
-        target=(g("meshcore_host", "") if mc_conn == "tcp" else g("meshcore_port", "")) or "",
+        target=(g("meshcore_host", "") if mc_conn in ("tcp", "ble") else g("meshcore_port", "")) or "",
         make=lambda: MeshCoreTransmitter(mc_conn, g("meshcore_port", "") or "", g("meshcore_host", "") or ""),
         repeat=rep("meshcore_repeat"), test_channel=num("meshcore_test_channel", 1),
     )
