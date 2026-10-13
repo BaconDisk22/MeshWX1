@@ -5,7 +5,7 @@ radio connection, or transmission is performed here.
 """
 from __future__ import annotations
 
-from fastapi import APIRouter
+from fastapi import APIRouter, Request
 from fastapi.responses import HTMLResponse
 from html import escape
 
@@ -60,7 +60,7 @@ async def bluetooth_scan():
 
 
 @router.get("/api/radios/status")
-async def radio_status(request: __import__("fastapi").Request):
+async def radio_status(request: Request):
     """Read-only transport diagnostics for a dashboard or support checks."""
     tx = request.app.state.tx
     return {"radios": tx.status(), "queue_depth": tx.queue_depth,
