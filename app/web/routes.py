@@ -537,7 +537,7 @@ async def save_settings(
     db.set_setting("ipaws_send_tests", bool(ipaws_send_tests))
     db.set_setting("ipaws_events", [e for e in ipaws_events if e])
     db.set_setting("meshtastic_enabled", bool(meshtastic_enabled))
-    db.set_setting("meshtastic_conn", (meshtastic_conn or "serial").strip())
+    db.set_setting("meshtastic_conn", meshtastic_conn if meshtastic_conn in ("serial", "tcp", "ble") else "serial")
     db.set_setting("meshtastic_host", meshtastic_host.strip())
     db.set_setting("serial_port", serial_port.strip())
     db.set_setting("meshcore_enabled", bool(meshcore_enabled))
