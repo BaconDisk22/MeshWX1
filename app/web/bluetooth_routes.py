@@ -65,3 +65,15 @@ async def radio_status(request: Request):
     tx = request.app.state.tx
     return {"radios": tx.status(), "queue_depth": tx.queue_depth,
             "any_connected": tx.connected}
+
+
+@router.get("/api/radios/discover-network")
+async def network_radio_discovery():
+    """Best-effort local mDNS discovery of Meshtastic TCP devices."""
+    from fastapi import HTTPException
+    from ..network_discovery import discover_network_radios
+    try:
+        radios = await discover_network_radios()
+    except (RuntimeError, OSError, TimeoutError) as exc:
+        raise HTTPException(status_code=503, detail=str(exc)) from exc
+    return {"radios": radios}
