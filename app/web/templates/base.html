@@ -7,10 +7,10 @@
   <script src="https://unpkg.com/htmx.org@2.0.4"></script>
   <style>
     :root{
-      --bg:#eef1f7; --card:#fff; --ink:#1b2338; --muted:#78849c; --line:#e7ebf3;
-      --accent:#4b63e6; --inset:#f5f7fc;
+      --bg:#101a22; --card:#1b2a35; --ink:#e6eff2; --muted:#a2b6c0; --line:#334753;
+      --accent:#67c6be; --inset:#233641;
       --good:#23c26b; --warn:#f5a524; --bad:#ef4b4b;
-      --sb1:#1a2247; --sb2:#2e2f66;
+      --sb1:#0d1b25; --sb2:#17323a;
       --shadow:0 1px 2px rgba(16,24,48,.05), 0 12px 30px rgba(16,24,48,.06);
     }
     *{box-sizing:border-box;}
@@ -72,7 +72,7 @@
 
     /* forms */
     input,select,textarea,button{font:inherit;}
-    input,select,textarea{background:#fff;color:var(--ink);border:1px solid var(--line);
+    input,select,textarea{background:#20313c;color:var(--ink);border:1px solid var(--line);
       border-radius:9px;padding:9px 11px;width:100%;}
     input:focus,select:focus,textarea:focus{outline:2px solid rgba(75,99,230,.35);border-color:var(--accent);}
     label{display:block;margin:12px 0 5px;color:var(--muted);font-size:13px;font-weight:500;}
@@ -123,7 +123,7 @@
     .mini{text-align:right;}
     .mini .k{font-size:11px;text-transform:uppercase;letter-spacing:.05em;color:var(--muted);font-weight:600;}
     .mini .v{font-size:16px;font-weight:700;margin-top:2px;}
-    .live-pill{display:inline-flex;align-items:center;gap:8px;background:#fff;border:1px solid var(--line);
+    .live-pill{display:inline-flex;align-items:center;gap:8px;background:var(--card);border:1px solid var(--line);
       box-shadow:var(--shadow);border-radius:30px;padding:8px 14px;font-weight:600;font-size:13.5px;color:var(--ink);}
     .live-pill .dot{width:9px;height:9px;border-radius:50%;background:var(--good);box-shadow:0 0 0 4px rgba(35,194,107,.18);}
     .live-pill.paused{color:#a9720a;} .live-pill.paused .dot{background:var(--warn);box-shadow:0 0 0 4px rgba(245,165,36,.18);}
@@ -183,7 +183,7 @@
 
     /* settings pickers (county + event checkboxes) */
     .checkgrid{display:grid;grid-template-columns:repeat(auto-fill,minmax(190px,1fr));gap:7px 16px;
-      border:1px solid var(--line);border-radius:10px;padding:13px 15px;background:#fff;}
+      border:1px solid var(--line);border-radius:10px;padding:13px 15px;background:var(--card);}
     .checkgrid.scroll{max-height:300px;overflow:auto;}
     .chk{display:flex;align-items:center;gap:8px;margin:0;font-size:13.5px;font-weight:400;
       color:var(--ink);cursor:pointer;text-transform:none;letter-spacing:0;}
