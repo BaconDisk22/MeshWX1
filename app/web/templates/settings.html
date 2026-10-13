@@ -59,7 +59,7 @@
 
   <div class="panel">
     <h3>Radios</h3>
-    <p class="hint"><a href="/settings/bluetooth">Scan nearby Bluetooth devices (experimental)</a> — discovery only; connecting radios over BLE is not yet supported.</p>
+    <p class="hint"><a href="/settings/bluetooth">Scan nearby Bluetooth devices (experimental)</a> — select Bluetooth LE below and enter the discovered device address. Hardware testing is still required.</p>
     <p class="hint">Run <b>Meshtastic</b> and/or <b>MeshCore</b> side by side. For each: pick the
       connection, click <b>Connect &amp; load channels</b>, then choose which channel carries live
       alerts and which carries test messages.</p>
@@ -100,10 +100,11 @@
           <select name="meshcore_conn" onchange="mwxConn('mc', this.value)">
             <option value="serial" {% if mc_conn=='serial' %}selected{% endif %}>USB (serial)</option>
             <option value="tcp" {% if mc_conn=='tcp' %}selected{% endif %}>Network (IP / TCP)</option>
+            <option value="ble" {% if mc_conn=='ble' %}selected{% endif %}>Bluetooth LE (experimental)</option>
           </select></div>
       </div>
 
-      <div id="mc-usb" style="display:{{ 'none' if mc_conn=='tcp' else 'block' }}">
+      <div id="mc-usb" style="display:{{ 'none' if mc_conn in ('tcp','ble') else 'block' }}">
         <label>USB serial port (COM3 on Windows &middot; /dev/ttyUSB0 &middot; /dev/ttyACM0)</label>
         <input id="meshcore_port" name="meshcore_port" value="{{ mc_port }}"
                placeholder="click Scan, then Use - or type it">
@@ -112,8 +113,8 @@
                 hx-swap="outerHTML" style="margin-top:8px;">Scan for USB ports</button>
         <div style="margin-top:8px;">{% set target = 'meshcore_port' %}{% include "_ports.html" %}</div>
       </div>
-      <div id="mc-ip" style="display:{{ 'block' if mc_conn=='tcp' else 'none' }}">
-        <label>Network address (host:port)</label>
+      <div id="mc-ip" style="display:{{ 'block' if mc_conn in ('tcp','ble') else 'none' }}">
+        <label>Network host or Bluetooth address / macOS UUID</label>
         <input name="meshcore_host" value="{{ mc_host }}" placeholder="192.168.1.51:4000">
       </div>
 
