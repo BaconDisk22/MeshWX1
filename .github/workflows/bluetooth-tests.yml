@@ -1,0 +1,38 @@
+name: Bluetooth regression tests
+
+on:
+  push:
+    branches:
+      - feature/bluetooth-radio-connections
+  pull_request:
+    paths:
+      - 'app/bluetooth_discovery.py'
+      - 'app/transmit.py'
+      - 'app/web/bluetooth_routes.py'
+      - 'app/web/routes.py'
+      - 'app/web/templates/settings.html'
+      - 'tests/test_bluetooth_connections.py'
+      - 'requirements*.txt'
+      - '.github/workflows/bluetooth-tests.yml'
+  workflow_dispatch:
+
+jobs:
+  bluetooth-tests:
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    strategy:
+      fail-fast: false
+      matrix:
+        python-version: ['3.11', '3.12', '3.13']
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: ${{ matrix.python-version }}
+          cache: pip
+      - name: Install dependencies
+        run: python -m pip install -r requirements-dev.txt
+      - name: Compile modified modules
+        run: python -m compileall -q app
+      - name: Run Bluetooth regression tests
+        run: python -m pytest -q tests/test_bluetooth_connections.py

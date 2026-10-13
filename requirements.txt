@@ -11,3 +11,6 @@ meshtastic>=2.7.5,<3
 pyserial>=3.5,<4
 meshcore>=2.3.8,<3
 tzdata>=2024.1
+
+# BLE radio transport and host discovery (requires OS Bluetooth permissions)
+bleak>=0.22,<2
