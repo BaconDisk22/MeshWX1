@@ -46,6 +46,18 @@ async def _startup_serial(db: Database, tx: TransmitManager) -> None:
         else:
             db.add_event("WARN", "no node found during startup scan")
             logger.warning("no node found during startup scan")
+    # Best-effort startup discovery for network radios; never override an explicit host.
+    from .network_discovery import discover_network_radios
+    for protocol in ("meshtastic",):
+        if (db.get_setting(protocol + "_conn", "serial") == "tcp"
+                and not db.get_setting(protocol + "_host", "")):
+            try:
+                discovered = await discover_network_radios(timeout=3)
+                if len(discovered) == 1:
+                    db.set_setting(protocol + "_host", discovered[0]["host"])
+                    db.add_event("INFO", "network radio auto-discovered")
+            except Exception as exc:
+                logger.info("network discovery unavailable: %s", exc)
     await tx.reconfigure()
 
 
