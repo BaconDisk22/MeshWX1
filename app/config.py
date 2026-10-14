@@ -55,7 +55,7 @@ def load_bootstrap() -> BootstrapConfig:
     except OSError:
         pass
     return BootstrapConfig(
-        http_host=os.environ.get("MESH_WX_HOST", "0.0.0.0"),
+        http_host=os.environ.get("MESH_WX_HOST", "127.0.0.1"),
         http_port=int(os.environ.get("MESH_WX_PORT", "8000")),
         db_path=str(Path(db_path).expanduser()),
     )
