@@ -10,7 +10,7 @@ import sys
 from dataclasses import dataclass
 from pathlib import Path
 
-APP_DIRNAME = "MeshWX"
+APP_DIRNAME = "WXCOMMAND-PRO"
 
 
 def default_data_dir() -> Path:
@@ -33,7 +33,7 @@ def default_data_dir() -> Path:
     if sys.platform == "darwin":
         return Path.home() / "Library" / "Application Support" / APP_DIRNAME
     base = os.environ.get("XDG_DATA_HOME") or str(Path.home() / ".local" / "share")
-    return Path(base) / "mesh-wx"
+    return Path(base) / "wxcommand-pro"
 
 
 @dataclass(frozen=True)
@@ -47,7 +47,8 @@ def load_bootstrap() -> BootstrapConfig:
     db_path = os.environ.get("MESH_WX_DB")
     if not db_path:
         data_dir = default_data_dir()
-        db_path = str(data_dir / "mesh-wx.db")
+        legacy = (Path.home() / "Library" / "Application Support" / "MeshWX" / "mesh-wx.db") if sys.platform == "darwin" else (Path.home() / ".local" / "share" / "mesh-wx" / "mesh-wx.db") if not sys.platform.startswith("win") else Path(os.environ.get("LOCALAPPDATA", str(Path.home()))) / "MeshWX" / "mesh-wx.db"
+        db_path = str(legacy if legacy.exists() and not (data_dir / "wxcommand-pro.db").exists() else data_dir / "wxcommand-pro.db")
     # Make sure the parent directory exists so SQLite can create the file.
     parent = Path(db_path).expanduser().parent
     try:
