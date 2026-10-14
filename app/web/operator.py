@@ -1,11 +1,16 @@
 """Operator-facing read-only UX data and safe local preferences."""
 from __future__ import annotations
 
-from fastapi import APIRouter, Request, HTTPException
+from fastapi import APIRouter, Request, HTTPException, Depends
 from fastapi.responses import HTMLResponse, JSONResponse
 from pydantic import BaseModel, Field
 
-router = APIRouter()
+def local_operator_only(request: Request):
+    if request.client is None or request.client.host not in ("127.0.0.1", "::1", "testclient"):
+        raise HTTPException(status_code=403, detail="Operator API requires local access")
+
+
+router = APIRouter(dependencies=[Depends(local_operator_only)])
 
 
 class Preferences(BaseModel):
