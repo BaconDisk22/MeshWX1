@@ -21,7 +21,7 @@ def build(root: Path) -> Path:
     plist = {
         "CFBundleName": "WXCOMMAND-PRO",
         "CFBundleDisplayName": "WXCOMMAND-PRO",
-        "CFBundleIdentifier": "org.meshwx.local",
+        "CFBundleIdentifier": "org.wxcommandpro.local",
         "CFBundleExecutable": "WXCOMMAND-PRO",
         "CFBundlePackageType": "APPL",
         "CFBundleVersion": "1",
