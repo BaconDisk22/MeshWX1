@@ -9,6 +9,7 @@ place. It is NOT notarized or distributable as a standalone binary.
 from __future__ import annotations
 
 import plistlib
+import shlex
 import stat
 from pathlib import Path
 
@@ -29,11 +30,13 @@ def build(root: Path) -> Path:
         plistlib.dump(plist, file)
     executable = macos / "MeshWX"
     script = f"""#!/bin/bash
-cd "{str(root).replace(chr(34), chr(92) + chr(34))}"
+set -e
+cd {shlex.quote(str(root))}
 if [ ! -x .venv/bin/python ]; then
   osascript -e 'display alert "MeshWX virtual environment not found"'
   exit 1
 fi
+open "http://127.0.0.1:8000/operator" >/dev/null 2>&1 &
 exec .venv/bin/python -m app.main
 """
     executable.write_text(script)
