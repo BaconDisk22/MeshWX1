@@ -132,13 +132,15 @@ async def weather_map():
     import httpx
     try:
         async with httpx.AsyncClient(timeout=12) as client:
-            response = await client.get("https://api.weather.gov/alerts/active", params={"limit": 100}, headers={"User-Agent": "MeshWX operator map", "Accept": "application/geo+json"})
+            response = await client.get("https://api.weather.gov/alerts/active", params={"limit": 100}, headers={"User-Agent": "WXCOMMAND-PRO (operator map; contact: project GitHub repository)", "Accept": "application/geo+json"})
             response.raise_for_status()
             data = response.json()
     except (httpx.HTTPError, ValueError) as exc:
         raise HTTPException(status_code=503, detail="NWS map unavailable") from exc
     features = []
     for item in data.get("features", []):
+        if not isinstance(item, dict):
+            continue
         geometry = item.get("geometry")
         if isinstance(geometry, dict) and geometry.get("type") in ("Polygon", "MultiPolygon"):
             props = item.get("properties") or {}
