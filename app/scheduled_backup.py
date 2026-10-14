@@ -8,6 +8,7 @@ from __future__ import annotations
 
 import asyncio
 import logging
+import sqlite3
 from datetime import datetime, timezone
 from pathlib import Path
 
@@ -23,7 +24,7 @@ def backup_once(db_path: Path, directory: Path, keep: int = 7) -> Path:
     destination = directory / ("meshwx-" + datetime.now(timezone.utc).strftime("%Y%m%d-%H%M%S-%f") + ".db")
     try:
         backup(db_path, destination)
-        with __import__("sqlite3").connect(destination) as conn:
+        with sqlite3.connect(destination) as conn:
             verdict = conn.execute("PRAGMA quick_check").fetchone()[0]
             if verdict != "ok":
                 raise RuntimeError("backup integrity check failed: " + str(verdict))
