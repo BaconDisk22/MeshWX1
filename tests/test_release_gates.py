@@ -1,9 +1,8 @@
 """Release-gate tests: safe defaults, API validation and non-transmitting preview."""
-from types import SimpleNamespace
 import pytest
 from fastapi import HTTPException
 from app.config import load_bootstrap
-from app.web.operator import Preview, preview, weather_map
+from app.web.operator import Preview, weather_map
 
 
 def test_http_default_is_loopback(monkeypatch, tmp_path):
