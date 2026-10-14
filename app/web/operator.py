@@ -4,6 +4,7 @@ from __future__ import annotations
 from fastapi import APIRouter, Request, HTTPException
 from fastapi.responses import HTMLResponse, JSONResponse
 from pydantic import BaseModel, Field
+from datetime import datetime, timezone
 
 router = APIRouter()
 
@@ -37,6 +38,8 @@ def build_notifications(radios: list[dict], last_poll_result: str, queue_depth: 
         alerts.append({"level": "warning", "message": "Weather polling reported an error."})
     if queue_depth > 5:
         alerts.append({"level": "warning", "message": "Transmit queue has more than five pending messages."})
+    for alert in alerts:
+        alert["id"] = alert["message"].lower().replace(" ", "_").replace(".", "")[:90]
     return alerts
 
 
@@ -161,3 +164,30 @@ async def diagnostics(request: Request):
         "dry_run": db.get_setting("dry_run", True),
         "uptime_seconds": poller.status.uptime_seconds,
     }
+
+
+class NotificationAck(BaseModel):
+    id: str = Field(min_length=1, max_length=90)
+
+
+@router.post("/api/ux/notifications/ack")
+async def acknowledge_notification(request: Request, payload: NotificationAck):
+    tx = request.app.state.tx
+    poller = request.app.state.poller
+    active = build_notifications(tx.status(), poller.status.last_poll_result, tx.queue_depth)
+    if not any(item["id"] == payload.id for item in active):
+        raise HTTPException(status_code=404, detail="Notification is not active")
+    request.app.state.db.set_setting("ux_ack_" + payload.id,
+                                     datetime.now(timezone.utc).isoformat())
+    return {"acknowledged": payload.id}
+
+
+@router.get("/api/ux/notifications/history")
+async def notification_history(request: Request):
+    db = request.app.state.db
+    tx = request.app.state.tx
+    poller = request.app.state.poller
+    active = build_notifications(tx.status(), poller.status.last_poll_result, tx.queue_depth)
+    for item in active:
+        item["acknowledged_at"] = db.get_setting("ux_ack_" + item["id"], None)
+    return {"notifications": active, "note": "Acknowledgements persist; resolved warnings are not retained."}
