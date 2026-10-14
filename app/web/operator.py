@@ -142,3 +142,23 @@ async def weather_map():
             props = item.get("properties") or {}
             features.append({"type": "Feature", "geometry": geometry, "properties": {k: props.get(k) for k in ("event", "severity", "areaDesc", "expires")}})
     return {"type": "FeatureCollection", "features": features, "limited": True}
+
+
+@router.get("/api/ux/diagnostics")
+async def diagnostics(request: Request):
+    """Read-only diagnostic summary; never expose stored credentials."""
+    db = request.app.state.db
+    tx = request.app.state.tx
+    poller = request.app.state.poller
+    return {
+        "radio_connections": [
+            {"name": radio["name"], "enabled": radio["enabled"],
+             "connected": radio["connected"], "connection": radio["conn"]}
+            for radio in tx.status()
+        ],
+        "queue_depth": tx.queue_depth,
+        "last_weather_poll": poller.status.last_poll_time,
+        "weather_poll_result": poller.status.last_poll_result,
+        "dry_run": db.get_setting("dry_run", True),
+        "uptime_seconds": poller.status.uptime_seconds,
+    }
