@@ -1,4 +1,4 @@
-<h1 align="center">MeshWX</h1>
+<h1 align="center">WXCOMMAND-PRO</h1>
 
 <p align="center">
   <b>Off-grid weather warnings.</b> MeshWX watches the National Weather Service and
