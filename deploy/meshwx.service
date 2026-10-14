@@ -1,4 +1,3 @@
-#!/bin/sh
 # Raspberry Pi systemd service example; adjust User, WorkingDirectory and ExecStart.
 [Unit]
 Description=MeshWX weather alerts to mesh radio
@@ -9,9 +8,10 @@ Wants=network-online.target
 Type=simple
 User=pi
 WorkingDirectory=/home/pi/MeshWX1
-ExecStart=/home/pi/MeshWX1/.venv/bin/python -m app.main
+ExecStart=/home/pi/MeshWX1/.venv/bin/python -m uvicorn app.main:app --host 127.0.0.1 --port 8000
 Restart=on-failure
 RestartSec=10
+Environment=MESHWX_BACKUP_DIR=/home/pi/meshwx-backups
 TimeoutStopSec=30
 NoNewPrivileges=true
 
