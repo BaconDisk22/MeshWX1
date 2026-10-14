@@ -8,7 +8,6 @@ from __future__ import annotations
 
 import asyncio
 import logging
-import os
 from datetime import datetime, timezone
 from pathlib import Path
 
@@ -22,7 +21,15 @@ def backup_once(db_path: Path, directory: Path, keep: int = 7) -> Path:
         raise ValueError("keep must be between 1 and 365")
     directory.mkdir(parents=True, exist_ok=True)
     destination = directory / ("meshwx-" + datetime.now(timezone.utc).strftime("%Y%m%d-%H%M%S-%f") + ".db")
-    backup(db_path, destination)
+    try:
+        backup(db_path, destination)
+        with __import__("sqlite3").connect(destination) as conn:
+            verdict = conn.execute("PRAGMA quick_check").fetchone()[0]
+            if verdict != "ok":
+                raise RuntimeError("backup integrity check failed: " + str(verdict))
+    except Exception:
+        destination.unlink(missing_ok=True)
+        raise
     for stale in sorted(directory.glob("meshwx-*.db"), reverse=True)[keep:]:
         stale.unlink()
     return destination
