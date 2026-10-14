@@ -78,7 +78,7 @@ async def overview(request: Request):
         "last_error": tx.last_error,
         "weather_history": history,
         "broadcast_history": broadcasts,
-        "connection_history": tx.connection_history(),
+        "connection_history": tx.connection_history() if callable(getattr(tx, "connection_history", None)) else [],
         "dry_run": db.get_setting("dry_run", True),
     }
 
