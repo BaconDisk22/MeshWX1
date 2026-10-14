@@ -1,7 +1,7 @@
 """Operator-facing read-only UX data and safe local preferences."""
 from __future__ import annotations
 
-from fastapi import APIRouter, Request
+from fastapi import APIRouter, Request, HTTPException
 from fastapi.responses import HTMLResponse, JSONResponse
 from pydantic import BaseModel, Field
 
@@ -122,3 +122,23 @@ async def operator():
 @router.get("/operator/manifest.webmanifest")
 async def manifest():
     return JSONResponse({"name":"MeshWX Operator Center","short_name":"MeshWX","start_url":"/operator","display":"standalone","background_color":"#101a22","theme_color":"#101a22"},media_type="application/manifest+json")
+
+
+@router.get("/api/ux/map")
+async def weather_map():
+    """Display-only NWS active warning polygons, not the broadcast source."""
+    import httpx
+    try:
+        async with httpx.AsyncClient(timeout=12) as client:
+            response = await client.get("https://api.weather.gov/alerts/active", params={"limit": 100}, headers={"User-Agent": "MeshWX operator map", "Accept": "application/geo+json"})
+            response.raise_for_status()
+            data = response.json()
+    except (httpx.HTTPError, ValueError) as exc:
+        raise HTTPException(status_code=503, detail="NWS map unavailable") from exc
+    features = []
+    for item in data.get("features", []):
+        geometry = item.get("geometry")
+        if isinstance(geometry, dict) and geometry.get("type") in ("Polygon", "MultiPolygon"):
+            props = item.get("properties") or {}
+            features.append({"type": "Feature", "geometry": geometry, "properties": {k: props.get(k) for k in ("event", "severity", "areaDesc", "expires")}})
+    return {"type": "FeatureCollection", "features": features, "limited": True}
