@@ -1,4 +1,4 @@
-"""Create a simple unsigned macOS MeshWX.app bundle.
+"""Create a simple unsigned macOS WXCOMMAND-PRO.app bundle.
 
 Run on macOS after creating .venv:
     python3 deploy/build_macos_app.py
@@ -15,25 +15,25 @@ from pathlib import Path
 
 
 def build(root: Path) -> Path:
-    bundle = root / "dist" / "MeshWX.app"
+    bundle = root / "dist" / "WXCOMMAND-PRO.app"
     macos = bundle / "Contents" / "MacOS"
     macos.mkdir(parents=True, exist_ok=True)
     plist = {
-        "CFBundleName": "MeshWX",
-        "CFBundleDisplayName": "MeshWX",
+        "CFBundleName": "WXCOMMAND-PRO",
+        "CFBundleDisplayName": "WXCOMMAND-PRO",
         "CFBundleIdentifier": "org.meshwx.local",
-        "CFBundleExecutable": "MeshWX",
+        "CFBundleExecutable": "WXCOMMAND-PRO",
         "CFBundlePackageType": "APPL",
         "CFBundleVersion": "1",
     }
     with (bundle / "Contents" / "Info.plist").open("wb") as file:
         plistlib.dump(plist, file)
-    executable = macos / "MeshWX"
+    executable = macos / "WXCOMMAND-PRO"
     script = f"""#!/bin/bash
 set -e
 cd {shlex.quote(str(root))}
 if [ ! -x .venv/bin/python ]; then
-  osascript -e 'display alert "MeshWX virtual environment not found"'
+  osascript -e 'display alert "WXCOMMAND-PRO virtual environment not found"'
   exit 1
 fi
 open "http://127.0.0.1:8000/operator" >/dev/null 2>&1 &
