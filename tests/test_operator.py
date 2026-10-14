@@ -28,7 +28,7 @@ async def test_preferences_round_trip():
     request = SimpleNamespace(app=SimpleNamespace(state=SimpleNamespace(db=DB())))
     await save_preferences(request, Preferences(compact=True, advanced=True, monitor=False))
     result = await preferences(request)
-    assert result == {"compact": True, "advanced": True, "monitor": False}
+    assert result == {"compact": True, "advanced": True, "monitor": False, "show_radios": True, "show_activity": True, "show_weather": True, "show_map": True}
 
 
 def test_operator_notifications():
