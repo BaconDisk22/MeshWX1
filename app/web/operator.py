@@ -12,6 +12,10 @@ class Preferences(BaseModel):
     compact: bool = False
     advanced: bool = False
     monitor: bool = False
+    show_radios: bool = True
+    show_activity: bool = True
+    show_weather: bool = True
+    show_map: bool = True
 
 
 class Preview(BaseModel):
@@ -96,8 +100,8 @@ async def preview(payload: Preview):
 @router.get("/api/ux/preferences")
 async def preferences(request: Request):
     db = request.app.state.db
-    return {k: str(db.get_setting("ux_" + k, "false")).lower() in ("true", "1", "yes")
-            for k in ("compact", "advanced", "monitor")}
+    return {k: str(db.get_setting("ux_" + k, "true" if k.startswith("show_") else "false")).lower() in ("true", "1", "yes")
+            for k in Preferences.model_fields}
 
 
 @router.post("/api/ux/preferences")
