@@ -34,3 +34,32 @@ Stop MeshWX before restoring. Keep backups outside the application directory, pr
 - Review HTTP access control before exposing the service beyond a trusted LAN.
 
 No physical radio or host platform has been certified by these instructions.
+
+
+## Optional daily backups
+Set `MESHWX_BACKUP_DIR` to a writable directory outside the application's
+working directory before starting MeshWX. It performs a backup at startup and
+every 24 hours, retaining the seven most recent snapshots. Backups contain
+settings and operational data, so restrict directory permissions. Verify
+restores offline before relying on backups.
+
+## Optional primary/backup failover
+In Radio Tools, enable the failover switch. When enabled, MeshWX tries enabled
+radios in their configured order and stops after the first confirmed send.
+This avoids intentional duplicate fan-out, but cannot guarantee exactly-once
+delivery if a transport times out after a radio actually transmitted.
+Leave disabled to preserve the existing broadcast-on-all-radios behavior.
+
+
+## macOS application bundle (unsigned)
+Run `python3 deploy/build_macos_app.py` on the Mac after installing the
+virtual environment. Double-click `dist/MeshWX.app` to start the server.
+The bundle is a local launcher tied to the checkout; it is **not** a signed,
+notarized or self-contained distribution. Confirm it works under your macOS
+privacy permissions before relying on it.
+
+## Release verification
+The safe smoke check is `python -m app.smokecheck`. It imports the NWS,
+IPAWS, Bluetooth and radio components but does not verify real transmissions.
+Run all pytest tests, check GitHub Actions, and test failover using test
+channels and actual hardware before tagging a release.

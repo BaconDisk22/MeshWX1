@@ -106,6 +106,23 @@ async def reconnect_radios(request: Request):
     return {"radios": request.app.state.tx.status()}
 
 
+class FailoverSetting(BaseModel):
+    enabled: bool
+
+
+@router.get("/api/radios/failover")
+async def get_failover(request: Request):
+    value = request.app.state.db.get_setting("radio_failover_enabled", False)
+    enabled = value.lower() in ("true", "1", "yes", "on") if isinstance(value, str) else bool(value)
+    return {"enabled": enabled}
+
+
+@router.post("/api/radios/failover")
+async def set_failover(request: Request, setting: FailoverSetting):
+    request.app.state.db.set_setting("radio_failover_enabled", setting.enabled)
+    return {"enabled": setting.enabled}
+
+
 @router.get("/settings/radio-tools", response_class=HTMLResponse)
 async def radio_tools():
     return HTMLResponse("""<!doctype html><html lang="en"><head>
@@ -118,6 +135,7 @@ button{background:#67c6be;color:#101a22;cursor:pointer}a{color:#67c6be}
 pre{white-space:pre-wrap;overflow-wrap:anywhere}input,select{background:#243944;color:white;border:1px solid #506673}
 </style></head><body><a href="/settings">← Settings</a><h1>Radio tools</h1>
 <section><h2>Live connection diagnostics</h2><button id="refresh">Refresh status</button><button id="reconnect">Reconnect radios</button><pre id="status" role="status"></pre></section>
+<section><h2>Radio failover</h2><p>Optional: transmit via the first successful enabled radio, falling back to the next only on failure. Default remains broadcast on all enabled radios.</p><label><input id="failover" type="checkbox"> Enable primary/backup failover</label><p id="failover-state" role="status"></p></section>
 <section><h2>Local network discovery</h2><p>Find Meshtastic mDNS announcements on this network. MeshCore may require manual IP configuration.</p>
 <button id="discover">Discover network radios</button><pre id="network" role="status"></pre></section>
 <section><h2>Saved radio profiles</h2><p>Save configurations, then activate or delete them below. Activation reconnects the selected radio.</p>
@@ -139,5 +157,7 @@ document.getElementById('refresh').onclick=()=>load('status','/api/radios/status
 document.getElementById('reconnect').onclick=async()=>{await load('status','/api/radios/reconnect',{method:'POST'});};
 document.getElementById('discover').onclick=()=>load('network','/api/radios/discover-network');
 document.getElementById('profile').onsubmit=async e=>{e.preventDefault();const v=Object.fromEntries(new FormData(e.target));await load('status','/api/radios/profiles',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify(v)});await profiles()};
+fetch('/api/radios/failover').then(r=>r.json()).then(v=>document.getElementById('failover').checked=v.enabled);
+document.getElementById('failover').onchange=async e=>{const r=await fetch('/api/radios/failover',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({enabled:e.target.checked})});document.getElementById('failover-state').textContent=r.ok?'Failover preference saved':'Unable to save failover setting'};
 load('status','/api/radios/status');profiles();setInterval(()=>load('status','/api/radios/status'),10000);
 </script></body></html>""")

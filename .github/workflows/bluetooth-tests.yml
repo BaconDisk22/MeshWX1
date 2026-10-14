@@ -3,9 +3,11 @@ name: Bluetooth regression tests
 on:
   push:
     branches:
+      - main
       - feature/bluetooth-radio-connections
       - feature/phase2-radio-reliability
       - feature/phase3-stability-release
+      - feature/phase4-ux
   pull_request:
     paths:
       - 'app/bluetooth_discovery.py'
@@ -16,9 +18,25 @@ on:
       - 'tests/test_bluetooth_connections.py'
       - 'tests/test_radio_tools.py'
       - 'tests/test_phase3.py'
+      - 'tests/test_operator.py'
+      - 'tests/test_operator_notifications.py'
+      - 'docs/VERIFICATION_MATRIX.md'
+      - 'tests/test_release_gates.py'
+      - 'app/config.py'
+      - 'docs/RELEASE_CHECKLIST.md'
+      - 'app/web/operator.py'
+      - 'app/web/templates/operator.html'
       - 'app/web/radio_tools.py'
       - 'app/network_discovery.py'
+      - 'app/scheduled_backup.py'
+      - 'app/backup.py'
+      - 'app/smokecheck.py'
       - 'app/web/templates/base.html'
+      - 'app/main.py'
+      - 'app/ipaws.py'
+      - 'app/poller.py'
+      - 'deploy/**'
+      - 'docs/PHASE3_SETUP.md'
       - 'requirements*.txt'
       - '.github/workflows/bluetooth-tests.yml'
   workflow_dispatch:
@@ -41,5 +59,7 @@ jobs:
         run: python -m pip install -r requirements-dev.txt
       - name: Compile modified modules
         run: python -m compileall -q app
+      - name: Run no-transmit smoke checks
+        run: python -m app.smokecheck
       - name: Run radio regression tests
         run: python -m pytest -q tests

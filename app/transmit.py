@@ -654,9 +654,13 @@ class TransmitManager:
             # (the send path retries internally on failure/no-transmit). No blind
             # repeats: a message is logged "sent" only when the radio confirmed it
             # actually keyed up, otherwise "failed" so the miss is visible.
-            for t in self._transports.values():
-                if not t.enabled:
-                    continue
+            enabled = [t for t in self._transports.values() if t.enabled]
+            # Opt-in failover sends to the first successful radio only. This
+            # avoids duplicate broadcasts while preserving legacy fan-out by default.
+            failover_setting = self._db.get_setting("radio_failover_enabled", False)
+            failover = (failover_setting.lower() in ("true", "1", "yes", "on")
+                        if isinstance(failover_setting, str) else bool(failover_setting))
+            for t in enabled:
                 ch = t.test_channel if use_test else t.channel
                 ok, err = await self._try_send(t, text, ch)
                 self._db.add_transmit_log(ch, blen, ok, text, manual,
@@ -664,6 +668,8 @@ class TransmitManager:
                 if ok:
                     any_ok = True
                     logger.info("transmitted via %s on ch %d (verified)", t.name, ch)
+                    if failover:
+                        break
         return any_ok
 
     async def send_manual(self, text: str) -> bool:
