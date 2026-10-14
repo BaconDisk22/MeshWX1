@@ -39,3 +39,7 @@ WXCOMMAND-PRO recognizes an existing legacy MeshWX database when a new database 
 - Comprehensive auth/CSRF protection for management routes
 - Signed and self-contained installers
 - Hardware acceptance tests and verified release binaries
+
+## Management endpoint security
+
+The server defaults to loopback-only. Browser requests that change state must have a matching Origin when an Origin header is present; cross-site Fetch Metadata writes are also rejected. When binding to a non-loopback interface with `MESH_WX_HOST`, `WXCOMMAND_API_TOKEN` is required on every HTTP request as the `X-WXCOMMAND-Token` header. A standard browser cannot provide that header automatically: remote operators must use an authenticated reverse proxy that injects the header only for authenticated clients, over TLS. Do not expose the raw service or token to the public internet. These controls are a defense-in-depth starting point, not a complete authentication audit; same-origin request forgery, proxies, and deployment-specific exposure require additional review.
