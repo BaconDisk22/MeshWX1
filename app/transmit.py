@@ -549,6 +549,8 @@ class TransmitManager:
         # Promote urgent live weather warnings ahead of routine queued weather.
         # Never reorder IPAWS/test traffic, and preserve FIFO among urgent alerts.
         if lane is self._queue and is_urgent_weather(text):
+            if dropped:
+                lane.popleft()  # deque.insert raises when maxlen is reached
             position = 0
             for existing in lane:
                 if not is_urgent_weather(existing.text):
