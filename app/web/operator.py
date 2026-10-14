@@ -123,7 +123,7 @@ async def operator():
 
 @router.get("/operator/manifest.webmanifest")
 async def manifest():
-    return JSONResponse({"name":"WXCOMMAND-PRO Operator Center","short_name":"WXCOMMAND","start_url":"/operator","display":"standalone","background_color":"#101a22","theme_color":"#101a22"},media_type="application/manifest+json")
+    return JSONResponse({"name":"WXCOMMAND-PRO Operator Center","short_name":"WXCOMMAND-PRO","start_url":"/operator","display":"standalone","background_color":"#101a22","theme_color":"#101a22"},media_type="application/manifest+json")
 
 
 @router.get("/api/ux/map")
