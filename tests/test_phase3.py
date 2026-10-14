@@ -45,3 +45,24 @@ def test_backup_failure_does_not_leave_partial_file(tmp_path):
     with pytest.raises(Exception):
         backup_once(tmp_path / "missing.db", destination)
     assert not list(destination.glob("meshwx-*.db"))
+
+
+@pytest.mark.asyncio
+async def test_failover_prefers_connected_radio():
+    db = SettingsDB(True)
+    manager = TransmitManager(db)
+    manager._transports = {
+        "meshtastic": SimpleNamespace(name="meshtastic", enabled=True, connected=False,
+                                     tx=None, channel=0, test_channel=1),
+        "meshcore": SimpleNamespace(name="meshcore", enabled=True, connected=True,
+                                   tx=SimpleNamespace(connected=True), channel=0, test_channel=1),
+    }
+    calls = []
+
+    async def fake_send(t, message, channel):
+        calls.append(t.name)
+        return True, ""
+
+    manager._try_send = fake_send
+    assert await manager._send_all("test", manual=True, on_test=True)
+    assert calls == ["meshcore"]
