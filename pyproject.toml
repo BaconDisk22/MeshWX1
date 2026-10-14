@@ -9,7 +9,7 @@ authors = [{ name = "WXCOMMAND-PRO Contributors" }]
 keywords = ["meshtastic", "meshcore", "nws", "weather", "alerts", "emergency", "lora"]
 
 [project.urls]
-Homepage = "https://github.com/BaconDisk22/MeshWX1"
+Homepage = "https://github.com/BaconDisk22/WXCOMMAND-PRO"
 
 [tool.pytest.ini_options]
 testpaths = ["tests"]
