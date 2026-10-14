@@ -7,7 +7,7 @@ on:
   workflow_dispatch:
 
 permissions:
-  contents: read
+  contents: write
 
 jobs:
   screenshots:
@@ -25,6 +25,24 @@ jobs:
           python -m playwright install --with-deps chromium
       - name: Capture deterministic demonstration scenarios
         run: python scripts/capture_demo_screenshots.py
+      - name: Update README screenshots on main
+        if: github.event_name == 'push' && github.ref == 'refs/heads/main'
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          set -euo pipefail
+          mkdir -p docs/screenshots
+          cp dist/screenshots/*.png docs/screenshots/
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add docs/screenshots
+          if git diff --cached --quiet; then
+            echo "Screenshots already up to date."
+            exit 0
+          fi
+          git commit -m "docs: refresh automated demo screenshots [skip ci]"
+          git push origin HEAD:main
+
       - name: Upload PNG screenshots
         uses: actions/upload-artifact@v4
         with:
