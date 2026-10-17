@@ -8,7 +8,12 @@ on:
 
 permissions:
   contents: write
+  pull-requests: write
+  actions: write
 
+concurrency:
+  group: screenshot-refresh-${{ github.ref }}
+  cancel-in-progress: false
 jobs:
   screenshots:
     name: Screenshot demo dashboard (Chromium)
@@ -25,23 +30,19 @@ jobs:
           python -m playwright install --with-deps chromium
       - name: Capture deterministic demonstration scenarios
         run: python scripts/capture_demo_screenshots.py
-      - name: Update README screenshots on main
-        if: github.event_name == 'push' && github.ref == 'refs/heads/main'
+      - name: Open screenshot pull request
+        if: success() && github.ref == 'refs/heads/main' && (github.event_name == 'push' || github.event_name == 'workflow_dispatch')
+        shell: bash
         env:
           GH_TOKEN: ${{ github.token }}
+          CHECK_WORKFLOWS: |
+            autopilot.yml
         run: |
-          set -euo pipefail
           mkdir -p docs/screenshots
           cp dist/screenshots/*.png docs/screenshots/
-          git config user.name "github-actions[bot]"
-          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
-          git add docs/screenshots
-          if git diff --cached --quiet; then
-            echo "Screenshots already up to date."
-            exit 0
-          fi
-          git commit -m "docs: refresh automated demo screenshots [skip ci]"
-          git push origin HEAD:main
+          SCREENSHOT_PATHS="$(for file in dist/screenshots/*.png; do printf 'docs/screenshots/%s\n' "${file##*/}"; done)"
+          export SCREENSHOT_PATHS
+          bash .github/scripts/open-screenshot-pr.sh
 
       - name: Upload PNG screenshots
         uses: actions/upload-artifact@v4
